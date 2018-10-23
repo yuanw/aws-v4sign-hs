@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 678e04cd387ea3c79038dd119a227b45412b2f64e14394c885dbc5cf552b7032
+-- hash: a6598cf2501509d2d00f075f44720c693160a8307ca9aa947ecb82031d92f878
 
 name:           aws-v4sign-hs
 version:        0.1.0.0
@@ -22,6 +22,7 @@ extra-source-files:
     ChangeLog.md
 data-files:
     data/example.txt
+    data/stringToSign.txt
 
 source-repository head
   type: git
@@ -90,6 +91,7 @@ test-suite aws-v4sign-hs-test
     , case-insensitive
     , cryptonite
     , data-default
+    , exceptions
     , hspec
     , http-client
     , http-conduit

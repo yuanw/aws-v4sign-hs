@@ -61,4 +61,5 @@ tests:
     dependencies:
     - aws-v4sign-hs
     - data-default
+    - exceptions
     - hspec

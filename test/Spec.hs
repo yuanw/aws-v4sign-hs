@@ -8,10 +8,14 @@ import           Network.HTTP.Simple
 import           Network.HTTP.Types
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Method
-import             Test.Hspec
+import           Test.Hspec
+import qualified Control.Monad.Fail as Fail
+import           Data.Time.Clock           (UTCTime)
+import           Data.Time.Format (parseTimeM, defaultTimeLocale)
+import Data.Time.LocalTime (ZonedTime, zonedTimeToUTC)
+import Control.Monad.Catch (MonadThrow)
 
-
-targetRequestM :: Maybe Request
+targetRequestM :: MonadThrow m => m Request
 targetRequestM = do
     initReq <- parseUrlThrow "https://iam.amazonaws.com"
     let req = setRequestQueryString [("Action", Just "ListUsers"), ("Version", Just "2010-05-08")] initReq
@@ -21,8 +25,6 @@ targetRequestM = do
                 }
     return req
 
-targetRequest :: Request
-targetRequest = fromJust targetRequestM
 
 --TODO: check whether ByteString endwith \n
 readTestFile :: FilePath -> IO BS.ByteString
@@ -30,13 +32,23 @@ readTestFile path = do
   content <- BS.readFile path
   return $ BS.take ((BS.length content) -1) content
 
+parseUTCTime :: Fail.MonadFail m => m UTCTime
+parseUTCTime = zonedTimeToUTC <$> (parseTimeM False defaultTimeLocale "%Y%m%dT%H%M%S" "20150830T123600")
+
 
 main :: IO ()
 main = hspec $ do
   describe "canonicalRequest" $ do
     it "task 1" $ do
         expectedContent <- readTestFile "data/example.txt"
-        (canonicalRequest targetRequest "") `shouldBe` expectedContent
+        request <- targetRequestM
+        (canonicalRequest request "") `shouldBe` expectedContent
 
     it "hashed canonical request" $ do
-      hexHash (canonicalRequest targetRequest "") `shouldBe` "f536975d06c0309214f805bb90ccff089219ecd68b2577efef23edd43b7e1a59"
+      request <- targetRequestM
+      hexHash (canonicalRequest request "") `shouldBe` "f536975d06c0309214f805bb90ccff089219ecd68b2577efef23edd43b7e1a59"
+
+    it "string to sign" $ do
+      utcTime <- parseUTCTime
+      expectedContent <- readTestFile "data/stringToSign.txt"
+      stringToSign utcTime "us-east-1" "iam" "f536975d06c0309214f805bb90ccff089219ecd68b2577efef23edd43b7e1a59" `shouldBe` expectedContent
