@@ -78,3 +78,20 @@ stringToSign date region service hashConReq = C.concat
     , "/aws4_request\n"
     , hashConReq
     ]
+
+
+--- Task 3: Calculate the signature for AWS Signature Version 4
+--- https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html ---
+v4DerivedKey :: ByteString -> -- ^ AWS Secret Access Key
+    ByteString -> -- ^ Date in YYYYMMDD format
+    ByteString -> -- ^ AWS region
+    ByteString -> -- ^ AWS service
+    ByteString
+v4DerivedKey secretAccessKey date region service = hmacSHA256 kService "aws4_request"
+    where kDate = hmacSHA256 ("AWS4" <> secretAccessKey) date
+          kRegion = hmacSHA256 kDate region
+          kService = hmacSHA256 kRegion service
+
+
+hmacSHA256 :: ByteString -> ByteString -> ByteString
+hmacSHA256 key p = (C.pack . show) (hmacGetDigest $ hmac key p :: Digest SHA256)
