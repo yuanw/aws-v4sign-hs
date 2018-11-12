@@ -54,4 +54,7 @@ main = hspec $ do
       stringToSign utcTime "us-east-1" "iam" "f536975d06c0309214f805bb90ccff089219ecd68b2577efef23edd43b7e1a59" `shouldBe` expectedContent
 
     it "calculate the signaute" $ do
-      v4DerivedKey "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY." "20150830" "us-east-1" "iam" `shouldBe` "c4afb1cc5771d871763a393e44b703571b55cc28424d1a5e86da6ed3c154a4b9"
+      v4DerivedKey "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY" "20150830" "us-east-1" "iam" `shouldBe` "c4afb1cc5771d871763a393e44b703571b55cc28424d1a5e86da6ed3c154a4b9"
+
+    it "basic test" $ do
+      hmacSHA256 "AWS4wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY" "201215" `shouldBe` "0138c7a6cbd60aa727b2f653a522567439dfb9f3e72b21f9b25941a42f04a7cd"
